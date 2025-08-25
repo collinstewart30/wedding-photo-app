@@ -1,15 +1,20 @@
 import { useState } from 'react';
 import { supabase } from './supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
+import imageCompression from 'browser-image-compression';
+
+const VALID_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+const MAX_SIZE_MB = 15; // absolute max before rejecting
+const COMPRESS_TARGET_MB = 2; // aim to shrink to ~2MB per photo
 
 function extFromFile(file) {
-  const nameExt = file.name?.split('.').pop()?.toLowerCase();
-  if (nameExt) return nameExt;
-  const map = { 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/heic':'heic', 'image/heif':'heif' };
+  const ext = file.name?.split('.').pop()?.toLowerCase();
+  if (ext) return ext;
+  const map = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'image/heif': 'heif' };
   return map[file.type] || 'jpg';
 }
 
-export default function UploadButton({ onUploaded }) {
+export default function UploadButton({ onUploaded, guestName }) {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
 
@@ -20,22 +25,35 @@ export default function UploadButton({ onUploaded }) {
     setBusy(true);
     try {
       let uploaded = [];
+
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        // Optional: client-side size guard (e.g. 15 MB)
-        if (file.size > 15 * 1024 * 1024) {
+        let file = files[i];
+
+        if (!VALID_TYPES.includes(file.type)) {
+          setStatus(`Skipped ${file.name} (invalid type)`);
+          continue;
+        }
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
           setStatus(`Skipped ${file.name} (too large)`);
           continue;
         }
 
+        // Compress before upload
+        const compressed = await imageCompression(file, {
+          maxSizeMB: COMPRESS_TARGET_MB,
+          maxWidthOrHeight: 2000,
+          useWebWorker: true
+        });
+
         setStatus(`Uploading ${i + 1} of ${files.length}…`);
 
         const ext = extFromFile(file);
-        const filePath = `public/${Date.now()}_${uuidv4()}.${ext}`;
+        const safeName = guestName ? guestName.replace(/\s+/g, '_') : 'anon';
+        const filePath = `public/${Date.now()}_${safeName}_${uuidv4()}.${ext}`;
 
         const { error: upErr } = await supabase.storage
           .from('photos')
-          .upload(filePath, file, { upsert: false, cacheControl: '3600' });
+          .upload(filePath, compressed, { upsert: false, cacheControl: '3600' });
 
         if (upErr) throw upErr;
 
@@ -50,24 +68,25 @@ export default function UploadButton({ onUploaded }) {
       setStatus('Upload failed. Try again.');
     } finally {
       setBusy(false);
-      // Reset the input so you can re-upload the same file(s)
-      e.target.value = '';
-      setTimeout(() => setStatus(''), 2000);
+      e.target.value = ''; // reset input
+      setTimeout(() => setStatus(''), 2500);
     }
   };
 
   return (
-    <label className="btn">
-      {busy ? 'Uploading…' : 'Upload Photos'}
-      <input
-        type="file"
-        accept="image/*"
-        multiple
-        capture="environment"
-        onChange={handleChange}
-        style={{ display: 'none' }}
-        disabled={busy}
-      />
-    </label>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start', gap: '4px' }}>
+      <label className="btn">
+        {busy ? 'Uploading…' : 'Upload Photos'}
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleChange}
+          style={{ display: 'none' }}
+          disabled={busy}
+        />
+      </label>
+      {status && <small style={{ color: '#666' }}>{status}</small>}
+    </div>
   );
 }

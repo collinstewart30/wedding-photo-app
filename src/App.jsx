@@ -2,16 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from './supabaseClient';
 import UploadButton from './UploadButton';
 import Gallery from './Gallery';
+import NameBar from './NameBar';
 
 async function listAllPublicUrls() {
-  // We put everything under the 'public/' folder, with timestamp prefixes.
-  const { data, error } = await supabase.storage.from('photos').list('public', {
-    limit: 1000, // plenty for a wedding
-  });
+  const { data, error } = await supabase.storage.from('photos').list('public', { limit: 1000 });
   if (error) throw error;
-
   const files = (data || []).slice();
-  // We named files like `${Date.now()}_uuid.ext`, so sort by name desc for newest first
   files.sort((a, b) => b.name.localeCompare(a.name));
   return files.map((f) => supabase.storage.from('photos').getPublicUrl(`public/${f.name}`).data.publicUrl);
 }
@@ -19,6 +15,7 @@ async function listAllPublicUrls() {
 export default function App() {
   const [photos, setPhotos] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [guestName, setGuestName] = useState('');
   const timerRef = useRef(null);
 
   const refresh = useCallback(async () => {
@@ -34,13 +31,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    refresh(); // initial load
-    timerRef.current = setInterval(refresh, 15000); // auto-refresh every 15s
+    refresh();
+    timerRef.current = setInterval(refresh, 15000);
     return () => clearInterval(timerRef.current);
   }, [refresh]);
 
   const handleUploaded = (urls) => {
-    // show instantly; auto-refresh will reconcile any order differences
     setPhotos((prev) => [...urls, ...prev]);
   };
 
@@ -48,11 +44,14 @@ export default function App() {
     <>
       <header className="header">
         <h1>📸 Wedding Photo Gallery</h1>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <UploadButton onUploaded={handleUploaded} />
-          <button className="btn" onClick={refresh} disabled={refreshing}>
-            {refreshing ? 'Refreshing…' : 'Refresh'}
-          </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+          <NameBar onNameChange={setGuestName} />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <UploadButton onUploaded={handleUploaded} guestName={guestName} />
+            <button className="btn" onClick={refresh} disabled={refreshing}>
+              {refreshing ? 'Refreshing…' : 'Refresh'}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -61,7 +60,7 @@ export default function App() {
       </main>
 
       <div className="footer">
-        Tip: Tap “Upload Photos” and choose from your camera roll. New photos appear for everyone.
+        Tap “Upload Photos” to add from your camera roll or camera. Entering your name is optional.
       </div>
     </>
   );
