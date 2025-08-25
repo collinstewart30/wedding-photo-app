@@ -44,25 +44,25 @@ export default function App() {
     <>
       <header className="header">
         <h1>Stewart<br></br>Wedding<br></br>Gallery</h1>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
-            <NameBar onNameChange={setGuestName} />
-            <div className="button-group">
-              <UploadButton onUploaded={handleUploaded} guestName={guestName} />
-              <button className="btn" onClick={refresh} disabled={refreshing}>
-                {refreshing ? 'Refreshing…' : 'Refresh'}
-              </button>
-            </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+          <NameBar onNameChange={setGuestName} />
+          <div className="button-group">
+            <UploadButton onUploaded={handleUploaded} guestName={guestName} />
+            <button className="btn" onClick={refresh} disabled={refreshing}>
+              {refreshing ? 'Refreshing…' : 'Refresh'}
+            </button>
           </div>
-        </header>
+        </div>
+      </header>
 
+      <div className="footer">
+        Thank you for sharing your memories! Tap ‘Upload Photos’ to add from your camera roll or camera. Optional: enter your name to tag your photo.
+      </div>
 
-          <main className="container">
-            <Gallery photos={photos} />
-          </main>
+      <main className="container">
+        <Gallery photos={photos} />
+      </main>
 
-          <div className="footer">
-            Thank you for sharing your memories! Tap ‘Upload Photos’ to add from your camera roll or camera. Optional: enter your name to tag your photo.
-          </div>
-        </>
-        );
+    </>
+  );
 }
