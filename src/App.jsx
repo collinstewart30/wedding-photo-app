@@ -71,14 +71,15 @@ export default function App() {
         </div>
       </header>
 
-      <main className="container">
-        <Gallery photos={photos} />
-      </main>
-
       <div className="footer">
         Thank you for sharing your memories! Tap ‘Upload Photos/Videos’ to add from your
         camera roll or camera. Optional: enter your name to tag your photo.
       </div>
+
+      <main className="container">
+        <Gallery photos={photos} />
+      </main>
+
     </>
   );
 }
