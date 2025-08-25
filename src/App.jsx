@@ -46,7 +46,7 @@ export default function App() {
         <h1>Stewart Wedding Gallery</h1>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
           <NameBar onNameChange={setGuestName} />
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="button-group">
             <UploadButton onUploaded={handleUploaded} guestName={guestName} />
             <button className="btn" onClick={refresh} disabled={refreshing}>
               {refreshing ? 'Refreshing…' : 'Refresh'}

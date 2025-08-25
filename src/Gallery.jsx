@@ -20,6 +20,7 @@ export default function Gallery({ photos }) {
 
       {selected && (
         <div className="lightbox" onClick={() => setSelected(null)}>
+          <button className="close-btn" onClick={() => setSelected(null)}>✕</button>
           <img src={selected} alt="" />
         </div>
       )}
