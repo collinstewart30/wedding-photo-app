@@ -1,16 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { supabase } from './supabaseClient';
+import { useEffect, useRef, useState } from 'react';
 import UploadButton from './UploadButton';
 import Gallery from './Gallery';
 import NameBar from './NameBar';
-
-async function listAllPublicUrls() {
-  const { data, error } = await supabase.storage.from('photos').list('public', { limit: 1000 });
-  if (error) throw error;
-  const files = (data || []).slice();
-  files.sort((a, b) => b.name.localeCompare(a.name));
-  return files.map((f) => supabase.storage.from('photos').getPublicUrl(`public/${f.name}`).data.publicUrl);
-}
 
 export default function App() {
   const [photos, setPhotos] = useState([]);
@@ -18,33 +9,58 @@ export default function App() {
   const [guestName, setGuestName] = useState('');
   const timerRef = useRef(null);
 
-  const refresh = useCallback(async () => {
+  // Fetch gallery items from your PHP endpoint
+  const refresh = async () => {
+    setRefreshing(true);
     try {
-      setRefreshing(true);
-      const urls = await listAllPublicUrls();
-      setPhotos(urls);
+      const res = await fetch('https://redsurgefitness.com/weddinglist.php');
+      const data = await res.json();
+      // Ensure all items have url and type
+      setPhotos(
+        data.map((item) => ({
+          url: item.url,
+          type: item.type,
+          guestName: item.guestName || 'anon',
+          uploadedAt: item.uploadedAt || null,
+        }))
+      );
     } catch (e) {
-      console.error('Error listing photos:', e);
+      console.error('Failed to fetch gallery:', e);
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     refresh();
-    timerRef.current = setInterval(refresh, 15000);
+    timerRef.current = setInterval(refresh, 15000); // refresh every 15s
     return () => clearInterval(timerRef.current);
-  }, [refresh]);
+  }, []);
 
-  const handleUploaded = (urls) => {
-    setPhotos((prev) => [...urls, ...prev]);
+  // Called when new files are uploaded
+  const handleUploaded = (uploadedItems) => {
+    // Prepend newly uploaded items so they appear at the top
+    setPhotos((prev) => [...uploadedItems, ...prev]);
   };
 
   return (
     <>
       <header className="header">
-        <h1>Stewart<br></br>Wedding<br></br>Gallery</h1>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+        <h1>
+          Stewart
+          <br />
+          Wedding
+          <br />
+          Gallery
+        </h1>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            alignItems: 'flex-end',
+          }}
+        >
           <NameBar onNameChange={setGuestName} />
           <div className="button-group">
             <UploadButton onUploaded={handleUploaded} guestName={guestName} />
@@ -55,14 +71,14 @@ export default function App() {
         </div>
       </header>
 
-      <div className="footer">
-        Thank you for sharing your memories! Tap ‘Upload Photos’ to add from your camera roll or camera. Optional: enter your name to tag your photo.
-      </div>
-
       <main className="container">
         <Gallery photos={photos} />
       </main>
 
+      <div className="footer">
+        Thank you for sharing your memories! Tap ‘Upload Photos/Videos’ to add from your
+        camera roll or camera. Optional: enter your name to tag your photo.
+      </div>
     </>
   );
 }
