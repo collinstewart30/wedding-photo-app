@@ -43,7 +43,7 @@ export default function App() {
   return (
     <>
       <header className="header">
-        <h1>💍 Stewart Wedding Gallery</h1>
+        <h1>Stewart Wedding Gallery</h1>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
           <NameBar onNameChange={setGuestName} />
           <div style={{ display: 'flex', gap: 8 }}>
