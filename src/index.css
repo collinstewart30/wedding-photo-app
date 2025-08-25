@@ -30,6 +30,8 @@ h1 {
   color: #a0522d;
   /* warm brown/gold accent */
   margin: 0;
+  line-height: 1.25rem;
+  text-align: center;
 }
 
 .container {
@@ -91,6 +93,8 @@ h1 {
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
+  font-size: 0.8rem;
+  text-align: center;
 }
 
 .btn:hover {
