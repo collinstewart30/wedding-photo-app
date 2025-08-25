@@ -49,7 +49,7 @@ export default function UploadButton({ onUploaded, guestName }) {
 
         const ext = extFromFile(file);
         const safeName = guestName ? guestName.replace(/\s+/g, '_') : 'anon';
-        const filePath = `public/${Date.now()}_${safeName}_${uuidv4()}.${ext}`;
+        const filePath = `public/${safeName}_${Date.now()}_${uuidv4()}.${ext}`;
 
         const { error: upErr } = await supabase.storage
           .from('photos')
