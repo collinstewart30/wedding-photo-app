@@ -43,7 +43,7 @@ export default function App() {
   return (
     <>
       <header className="header">
-        <h1>📸 Wedding Photo Gallery</h1>
+        <h1>💍 Stewart Wedding Gallery</h1>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
           <NameBar onNameChange={setGuestName} />
           <div style={{ display: 'flex', gap: 8 }}>
@@ -55,12 +55,13 @@ export default function App() {
         </div>
       </header>
 
+
       <main className="container">
         <Gallery photos={photos} />
       </main>
 
       <div className="footer">
-        Tap “Upload Photos” to add from your camera roll or camera. Entering your name is optional.
+        Thank you for sharing your memories! Tap ‘Upload Photos’ to add from your camera roll or camera. Optional: enter your name to tag your photo.
       </div>
     </>
   );
