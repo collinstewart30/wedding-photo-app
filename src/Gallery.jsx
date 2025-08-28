@@ -8,23 +8,31 @@ export default function Gallery({ photos }) {
       <div className="grid">
         {photos.map((item) => (
           item.type === 'photo' ? (
-            <img
-              key={item.url}
-              src={item.url}
-              alt=""
-              className="tile"
-              loading="lazy"
-              onClick={() => setSelected(item)}
-            />
+            <div key={item.id || item.url} style={{ position: 'relative' }}>
+              <img
+                src={item.url}
+                alt={item.guestName || ''}
+                className="tile"
+                loading="lazy"
+                onClick={() => setSelected(item)}
+              />
+              {item.guestName && (
+                <span className="guest-tag">{item.guestName}</span>
+              )}
+            </div>
           ) : (
-            <video
-              key={item.url}
-              className="tile"
-              controls
-              onClick={() => setSelected(item)}
-            >
-              <source src={item.url} type="video/mp4" />
-            </video>
+            <div key={item.id || item.url} style={{ position: 'relative' }}>
+              <video
+                className="tile"
+                controls
+                onClick={() => setSelected(item)}
+              >
+                <source src={item.url} type="video/mp4" />
+              </video>
+              {item.guestName && (
+                <span className="guest-tag">{item.guestName}</span>
+              )}
+            </div>
           )
         ))}
       </div>
@@ -42,7 +50,7 @@ export default function Gallery({ photos }) {
           ) : (
             <img
               src={selected.url}
-              alt=""
+              alt={selected.guestName || ''}
               style={{ maxWidth: '95vw', maxHeight: '90vh' }}
             />
           )}
