@@ -6,11 +6,16 @@ export default function Gallery({ photos }) {
   return (
     <>
       <div className="grid">
-        {photos.map((item) => (
-          item.type === 'photo' ? (
-            <div key={item.id || item.url} style={{ position: 'relative' }}>
+        {photos.map((item) => {
+          const key = `${item.id}-${item.url}`; // ensures React re-renders
+          const urlWithCacheBust = item.url.includes('?') 
+            ? `${item.url}&v=${item.id}` 
+            : `${item.url}?v=${item.id}`;
+
+          return item.type === 'photo' ? (
+            <div key={key} style={{ position: 'relative' }}>
               <img
-                src={item.url}
+                src={urlWithCacheBust}
                 alt={item.guestName || ''}
                 className="tile"
                 loading="lazy"
@@ -21,20 +26,23 @@ export default function Gallery({ photos }) {
               )}
             </div>
           ) : (
-            <div key={item.id || item.url} style={{ position: 'relative' }}>
+            <div key={key} style={{ position: 'relative' }}>
               <video
+                key={key} // force re-render when URL changes
                 className="tile"
                 controls
+                preload="metadata"
+                crossOrigin="anonymous"
                 onClick={() => setSelected(item)}
               >
-                <source src={item.url} type="video/mp4" />
+                <source src={urlWithCacheBust} type="video/mp4" />
               </video>
               {item.guestName && (
                 <span className="guest-tag">{item.guestName}</span>
               )}
             </div>
-          )
-        ))}
+          );
+        })}
       </div>
 
       {selected && (
@@ -42,14 +50,17 @@ export default function Gallery({ photos }) {
           <button className="close-btn" onClick={() => setSelected(null)}>✕</button>
           {selected.type === 'video' ? (
             <video
-              src={selected.url}
+              key={`${selected.id}-${selected.url}`}
+              src={`${selected.url}&v=${selected.id}`} // cache-bust
               controls
               autoPlay
+              preload="metadata"
+              crossOrigin="anonymous"
               style={{ maxWidth: '95vw', maxHeight: '90vh' }}
             />
           ) : (
             <img
-              src={selected.url}
+              src={`${selected.url}&v=${selected.id}`} // cache-bust
               alt={selected.guestName || ''}
               style={{ maxWidth: '95vw', maxHeight: '90vh' }}
             />
